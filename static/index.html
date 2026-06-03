@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>風の旅人</title>
+  <script src="game.js" defer></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap');
+
+    :root {
+      --bg:       #0d0d1a;
+      --panel:    #131326;
+      --border:   #2a2a4a;
+      --accent:   #7eb8d4;
+      --gold:     #f0c040;
+      --hp:       #e05555;
+      --mp:       #5588ee;
+      --green:    #55cc88;
+      --text:     #dde0f0;
+      --subtext:  #8888aa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Serif JP', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, #1a1a3a 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, #0d1a2a 0%, transparent 60%);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: var(--accent);
+      margin-bottom: 24px;
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 20px #7eb8d488, 0 0 40px #7eb8d433;
+      animation: glow 3s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #7eb8d466; }
+      to   { text-shadow: 0 0 30px #7eb8d4cc, 0 0 60px #7eb8d455; }
+    }
+
+    #app { width: 100%; max-width: 640px; }
+
+    /* ── スタート画面 ── */
+    #start-screen {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+    }
+    #start-screen h2 {
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      letter-spacing: 0.1em;
+    }
+    #start-screen p {
+      color: var(--subtext);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 16px;
+      margin: 8px 0;
+      background: #0d0d1a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    /* ── ボタン ── */
+    button {
+      padding: 10px 20px;
+      margin: 4px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #7eb8d411;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px #7eb8d422;
+    }
+    button:active { transform: translateY(0); }
+    button.primary {
+      border-color: var(--accent);
+      color: var(--accent);
+      padding: 14px 32px;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+    button.danger {
+      border-color: var(--hp);
+      color: var(--hp);
+    }
+    button.danger:hover { background: #e0555511; }
+    button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+    /* ── パネル共通 ── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 0.75rem;
+      color: var(--subtext);
+      letter-spacing: 0.15em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    /* ── ステータス ── */
+    #status-box { position: relative; }
+    .hero-name {
+      font-size: 1.15rem;
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .bar-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .bar-label span:first-child { color: var(--subtext); }
+    .bar-bg {
+      background: #1a1a2e;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .bar-fill.hp { background: linear-gradient(90deg, #c03030, #e05555); }
+    .bar-fill.mp { background: linear-gradient(90deg, #3355bb, #5588ee); }
+
+    .stat-nums {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+    .stat-nums span { color: var(--subtext); }
+    .stat-nums b    { color: var(--text); }
+    .gold-text { color: var(--gold); font-weight: bold; }
+
+    /* ── 敵 ── */
+    #enemy-box { display: none; }
+    .enemy-name {
+      font-size: 1.2rem;
+      color: var(--hp);
+      font-weight: bold;
+      margin-bottom: 10px;
+      animation: enemy-appear 0.4s ease;
+    }
+    @keyframes enemy-appear {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── ログ ── */
+    #log-box {
+      background: #080810;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      min-height: 140px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    #log-box p {
+      padding: 2px 0;
+      border-bottom: 1px solid #ffffff08;
+      animation: log-in 0.3s ease;
+    }
+    @keyframes log-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── マップ ── */
+    #map-screen { display: none; }
+    #map-canvas {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto 12px;
+      image-rendering: pixelated;
+    }
+    .map-hint {
+      text-align: center;
+      color: var(--subtext);
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    /* ── ボタングループ ── */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .btn-group-title {
+      width: 100%;
+      font-size: 0.75rem;
+      color: var(--subtext);
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    /* ── セパレーター ── */
+    .sep {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    #game-screen { display: none; }
+
+    /* ── shake アニメ ── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.3s ease; }
+  </style>
+</head>
+<body>
+  <h1>🌬️ 風の旅人</h1>
+  <div id="app">
+
+    <!-- ─── スタート画面 ─── -->
+    <div id="start-screen">
+      <h2>― 新たな旅が始まる ―</h2>
+      <p>あなたは風に導かれ、未知の大地へと踏み出す。<br>勇者よ、汝の名は？</p>
+      <input type="text" id="hero-name" placeholder="名前を入力..." maxlength="10">
+      <select id="hero-class">
+        <option value="戦士">⚔️  戦士　―　堅牢な守りと力強い一撃</option>
+        <option value="魔法使い">🔮 魔法使い ― 秘めた魔力で世界を焼く</option>
+        <option value="盗賊">🗡️  盗賊　―　疾風の如き素早さと策略</option>
+      </select>
+      <br><br>
+     <button class="primary" id="start-btn">🌬️ 旅立つ</button>
+      <br><br>
+      <div style="border-top:1px solid #2a2a4a;padding-top:16px;margin-top:8px;">
+        <p style="color:#8888aa;font-size:0.85rem;margin-bottom:12px;">― つづきから ―</p>
+        <input type="text" id="load-name" placeholder="セーブした名前を入力...">
+        <button id="load-btn">📂 ロードする</button>
+      </div>
+    </div>
+
+    <!-- ─── ゲーム画面 ─── -->
+    <div id="game-screen">
+
+      <!-- ステータス -->
+      <div class="panel" id="status-box">
+        <div class="panel-title">Traveler Status</div>
+        <div class="hero-name" id="s-name">---</div>
+        <div class="stat-grid">
+          <div class="bar-wrap">
+            <div class="bar-label"><span>HP</span><span id="s-hp-txt">-/-</span></div>
+            <div class="bar-bg"><div class="bar-fill hp" id="s-hp-bar" style="width:100%"></div></div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-label"><span>MP</span><span id="s-mp-txt">-/-</span></div>
+            <div class="bar-bg"><div class="bar-fill mp" id="s-mp-bar" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="stat-nums">
+          <span>ATK <b id="s-atk">-</b></span>
+          <span>DEF <b id="s-def">-</b></span>
+          <span>EXP <b id="s-exp">-/-</b></span>
+          <span class="gold-text" id="s-gold">- G</span>
+        </div>
+      </div>
+
+      <!-- 敵パネル -->
+      <div class="panel" id="enemy-box">
+        <div class="panel-title">Enemy</div>
+        <div class="enemy-name" id="e-name">---</div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>HP</span><span id="e-hp-txt">-/-</span></div>
+          <div class="bar-bg" style="height:12px">
+            <div class="bar-fill hp" id="e-hp-bar" style="width:100%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ログ -->
+      <div id="log-box"></div>
+
+      <!-- マップ画面 -->
+      <div id="map-screen">
+        <canvas id="map-canvas" width="448" height="320"></canvas>
+        <p class="map-hint">矢印キー or WASD で移動　ESC で町に戻る</p>
+        <div class="btn-group">
+          <button onclick="exitMap()">🏘️ 町に戻る</button>
+        </div>
+      </div>
+
+      <!-- 町メニュー -->
+      <div id="town-buttons">
+        <div class="btn-group">
+          <div class="btn-group-title">🏘️ TOWN MENU</div>
+          <button onclick="enterMap()">🌿 フィールドへ</button>
+          <button onclick="useInn()">💤 宿屋（10G）</button>
+          <button onclick="showQuests()">📋 クエスト</button>
+          <button onclick="showForge()">🔨 鍛冶屋</button>
+          <button onclick="showBestiary()">📖 魔物図鑑</button>
+          <button onclick="saveGame()">💾 セーブ</button>
+        </div>
+        <div id="sub-panel" style="display:none" class="panel"></div>
+      </div>
+
+      <!-- 戦闘メニュー -->
+      <div id="action-buttons" style="display:none">
+        <div class="btn-group">
+          <div class="btn-group-title">⚔️ BATTLE</div>
+          <button onclick="doAction('attack')">⚔️ たたかう</button>
+          <button onclick="showSkills()">🔮 まほう</button>
+          <button onclick="doAction('item','ポーション')">💊 ポーション</button>
+          <button class="danger" onclick="doAction('run')">🏃 にげる</button>
+        </div>
+      </div>
+
+      <!-- スキルメニュー -->
+      <div id="skill-buttons" style="display:none" class="btn-group"></div>
+
+    </div>
+  </div>
+</body>
+</html>
