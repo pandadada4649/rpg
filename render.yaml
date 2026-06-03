@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: kaze-no-tabibito
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
