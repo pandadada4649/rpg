@@ -3,23 +3,24 @@ from game.party import Party
 from game.world import World
 from game.save import load_game
 
-GAME_TITLE = "風の旅人"
+# ゲームタイトル
+GAME_TITLE = "鬼灯の剣士"
 
 def select_class() -> str:
-    print("=== 職業を選んでください ===")
-    print("1: 戦士    （HP高め・物理攻撃特化）")
-    print("2: 魔法使い（MP高め・魔法攻撃特化）")
-    print("3: 盗賊    （素早さ高め・ぬすむ）")
-    classes = {"1": "戦士", "2": "魔法使い", "3": "盗賊"}
+    print("=== 職を選べ ===")
+    print("1: 侍　　（HP高め・力強い一太刀）")
+    print("2: 陰陽師（霊力高め・術技特化）")
+    print("3: 忍　　（素早さ高め・暗殺術）")
+    classes = {"1": "侍", "2": "陰陽師", "3": "忍"}
     while True:
         choice = input("> ")
         if choice in classes:
             return classes[choice]
-        print("1〜3を入力してください")
+        print("1〜3を入力せよ")
 
 def main():
     print(f"\n{'='*35}")
-    print(f"🌬️  ～ {GAME_TITLE} ～  ⚔️")
+    print(f"🏮  ～ {GAME_TITLE} ～  ⚔️")
     print(f"{'='*35}")
     print("1: はじめから  2: つづきから")
     choice = input("> ")
@@ -34,7 +35,7 @@ def main():
             world.run()
             return
 
-    name = input("勇者の名前を入力してください > ")
+    name = input("汝の名は > ")
     player_class = select_class()
     hero  = Player(name, player_class)
     party = Party(hero)
